@@ -2,6 +2,57 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🚫 Git Operations Policy
+
+**CRITICAL: Do NOT perform git operations except `git status`**
+
+- ❌ **NEVER** run: `git add`, `git commit`, `git push`, `git pull`, `git merge`
+- ✅ **ONLY ALLOWED:** `git status`, `git diff`, `git log`
+- 📝 **Reason:** Git operations are handled in separate manual sessions
+
+### When User Says "Prepare for Git Commit"
+
+Perform these steps in order:
+
+1. **Clean up temporary files**
+   - Remove `*.tmp`, `*.bak`, temporary timestamped files
+   - Check for any debug files or test outputs
+
+2. **Update documentation**
+   - Update `README.md` if features/setup changed
+   - Update `plan.md` to reflect current progress
+   - Update `CLAUDE.md` if workflow changed
+   - Ensure all docs are consistent
+
+3. **Security check for GitHub push**
+   - Check `.gitignore` excludes: `data/output/*`, `data/cache/*`, `.env`
+   - Verify no hardcoded secrets: `grep -r "secret\|password\|api_key\|token" src/`
+   - Verify no dangerous code: `eval()`, `exec()`, `__import__`, `subprocess`
+   - Confirm output files won't be pushed
+
+4. **Output commit message in terminal**
+   - Write commit message directly to terminal output
+   - **DO NOT** create files like `COMMIT_MSG.txt` or similar
+   - Format: Title + body with bullet points of changes
+   - User will copy/paste this message when ready to commit
+
+**Example response to "prepare for git commit":**
+```
+✅ Cleaned up temporary files
+✅ Updated README.md, plan.md
+✅ Security check passed (no secrets, output files excluded)
+
+Suggested commit message:
+---
+Fix inactive users calculation and add deleted user tracking
+
+- Track current creators vs deleted creators separately
+- Fix inactive users metric (was showing -9, now correctly shows 6)
+- Add "About this data" section explaining all metrics
+- Update tests for new metrics (28 tests passing)
+---
+```
+
 ## 📁 File Naming Conventions
 
 **All files in this project follow consistent naming standards:**
