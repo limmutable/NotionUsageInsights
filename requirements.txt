@@ -8,10 +8,6 @@ python-dotenv==1.0.1
 pandas==2.2.0
 numpy==1.26.3
 
-# Excel Generation
-openpyxl==3.1.2
-xlsxwriter==3.1.9
-
 # CLI/Progress Display
 tqdm==4.66.1
 rich==13.7.0

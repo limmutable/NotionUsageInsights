@@ -201,15 +201,14 @@ The tool will need to:
 ### Core Dependencies
 - `notion-client` - Notion API wrapper
 - `pandas`, `numpy` - Data processing and analytics
-- `openpyxl`, `xlsxwriter` - Excel report generation
 - `python-dotenv` - Environment configuration
-- `tqdm` - Progress tracking
+- `tqdm`, `rich` - Progress tracking and CLI display
 
 ### Architecture Components
 1. **API Client** (`src/api_client.py`) - Rate-limited Notion API calls with caching
 2. **Export Extractor** (`src/extractors.py`) - Extract page IDs from workspace export
 3. **Analytics Engine** (`src/analytics.py`) - All metric calculations
-4. **Report Builder** (`src/report_builder.py`) - Excel report generation
+4. **Report Builder** (`src/report_builder.py`) - Markdown report generation
 5. **Main Orchestrator** (`main.py`) - Execution pipeline
 
 See [plan.md](plan.md) for detailed implementation guide.
@@ -398,7 +397,8 @@ def get_page_details(self, page_id: str):
 
 **Report Builder (`report_builder.py`):**
 - ✅ Accept pre-calculated analytics data
-- ✅ Focus on formatting and Excel generation
+- ✅ Focus on formatting and Markdown generation
+- ✅ Generate tables, headers, and visual indicators
 - ❌ NO data fetching
 - ❌ NO calculations
 

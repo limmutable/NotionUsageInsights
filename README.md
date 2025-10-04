@@ -130,18 +130,24 @@ python main.py
 
 ## Output
 
-### Excel Report
-Generated at: `./data/output/workspace_analytics_TIMESTAMP.xlsx`
+### Markdown Report
+Generated at: `./data/output/workspace_analytics_TIMESTAMP.md`
 
-**8 Sheets:**
-1. **Executive Summary** - Key metrics overview
-2. **Growth & Velocity** - Annual, quarterly, monthly trends
-3. **User Analytics** - Segmentation and top creators
-4. **Content Health** - Staleness, abandoned pages, archives
+**Report Sections:**
+1. **Executive Summary** - Key metrics overview with visual indicators
+2. **Growth & Velocity** - Annual, quarterly, monthly trends in tables
+3. **User Analytics** - Segmentation and top creators ranked
+4. **Content Health** - Staleness distribution, abandoned pages
 5. **Collaboration** - Individual scores and patterns
-6. **Cost Analysis** - Utilization, waste, ROI
-7. **Risk Assessment** - Concentration, bus factor
-8. **Raw Data** - Full dataset for custom analysis
+6. **Cost Analysis** - Utilization, waste, ROI calculations
+7. **Risk Assessment** - Concentration metrics, bus factor
+8. **Detailed Tables** - Full dataset tables for deeper analysis
+
+The Markdown format allows you to:
+- Import directly into Notion
+- Convert to HTML/PDF with pandoc
+- View in any Markdown viewer
+- Edit and customize easily
 
 ### Console Output
 ```
@@ -163,7 +169,7 @@ Started: 2024-01-15 14:30:00
   Potential Savings: $15,984/year
   Knowledge Risk (Bus Factor): 3 people
 
-📁 Report: ./data/output/workspace_analytics_20240115_163045.xlsx
+📁 Report: ./data/output/workspace_analytics_20240115_163045.md
 ```
 
 ## Configuration
@@ -195,7 +201,7 @@ notion-analytics/
 │   ├── api_client.py      # Notion API wrapper with caching
 │   ├── extractors.py      # Export file parsing
 │   ├── analytics.py       # Analytics calculations
-│   ├── report_builder.py  # Excel report generation
+│   ├── report_builder.py  # Markdown report generation
 │   └── utils.py          # Helper functions
 │
 ├── data/

@@ -1,0 +1,39 @@
+Fix inactive users calculation and add deleted user tracking
+
+This commit improves analytics accuracy by properly handling deleted
+users and adds clear explanations to the generated reports.
+
+Analytics Changes (src/analytics.py):
+- Track current creators vs deleted creators separately
+- Fix inactive users metric (current users who never created pages)
+  - Previously showed -9 (nonsensical: 18 current - 27 total contributors)
+  - Now correctly shows 6 (current users who haven't created pages)
+- Add new fields to summary metrics:
+  - current_creators: Active users still in workspace
+  - deleted_creators: Removed users whose pages remain
+- Update cost calculations to use current_creators instead of all contributors
+
+Report Builder Changes (src/report_builder.py):
+- Add "About this data" section explaining all metrics
+- Update Executive Summary with clearer language:
+  - Explain total pages = all pages across all time periods
+  - Show current vs deleted creator breakdown
+  - Display inactive users as percentage
+- Add new Quick Stats rows:
+  - "Total Users (Current)" - clarifies these are active users
+  - "Current Active Creators" - users still in workspace
+  - "Deleted User Pages" - content from removed users
+- Update Key Insights with specific numbers and percentages
+- Unicode emojis (✅ ⚠️ ❌) render correctly in Notion
+
+Testing (tests/test_report_builder.py):
+- Update test fixtures with new metrics
+- All 28 report builder tests passing
+
+Other Changes:
+- Update .gitignore to exclude timestamped markdown output files
+
+Fixes issue where users were confused by "27 of 18 users" and
+negative inactive user counts. Reports now clearly explain that
+workspace has 18 current users, 12 have created pages, 15 deleted
+users created pages that still remain, and 6 current users are inactive.

@@ -87,19 +87,13 @@ def main() -> int:
         print("   ✓ Analytics complete")
         print()
 
-        # ========== TODO: PHASE 6 - Report Generation ==========
-        # print("📄 Step 6: Generating Excel report...")
-        # report_builder = ReportBuilder()
-        # output_path = report_builder.generate_report(
-        #     growth_metrics=growth_metrics,
-        #     user_engagement=user_engagement,
-        #     content_health=content_health,
-        #     collaboration=collaboration,
-        #     cost_analysis=cost_analysis,
-        #     knowledge_risk=knowledge_risk
-        # )
-        # print(f"   ✓ Report saved: {output_path}")
-        # print()
+        # ========== PHASE 6 - Report Generation ==========
+        print("📄 Step 6: Generating Markdown report...")
+        from src.report_builder import MarkdownReportBuilder
+        report_builder = MarkdownReportBuilder(results)
+        output_path = report_builder.generate_report()
+        print(f"   ✓ Report saved: {output_path}")
+        print()
 
         # ========== Summary ==========
         print("=" * 70)
@@ -109,12 +103,12 @@ def main() -> int:
         print(f"📄 Pages (API): {len(pages)}")
         print(f"📄 Pages (Export): {len(export_pages)}")
         print(f"🗄️  Databases: {export_summary['total_databases']}")
-        # print(f"💾 Report: {output_path}")
+        print(f"💾 Report: {output_path}")
         print()
-        print("⚠️  NOTE: Full pipeline not yet implemented")
-        print("   ✅ Phase 4: Export Extractor (DONE)")
-        print("   ✅ Phase 5: Analytics Engine (DONE)")
-        print("   - Phase 6: Report Builder (pending)")
+        print("✅ All phases complete!")
+        print("   ✅ Phase 4: Export Extractor")
+        print("   ✅ Phase 5: Analytics Engine")
+        print("   ✅ Phase 6: Report Builder")
         print()
 
         return 0
