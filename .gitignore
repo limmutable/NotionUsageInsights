@@ -1,0 +1,77 @@
+# Environment variables
+.env
+
+# Python
+venv/
+env/
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Data directories
+data/export/*
+data/cache/*
+data/output/*
+
+# Keep directory structure but ignore contents
+!data/export/.gitkeep
+!data/cache/.gitkeep
+!data/output/.gitkeep
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary files
+*.tmp
+*.bak
+
+# Point-in-time snapshot files (not synced to repo)
+code_review_*.md
+project_status_*.md
+
+# Generated output files with datetime stamps
+*_[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]*.xlsx
+*_[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]*.pkl
+*_[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]*.json
+
+# Claude Code settings
+.claude/
+
+# Warp AI agent configuration
+WARP.md
