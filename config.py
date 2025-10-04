@@ -3,6 +3,7 @@ Configuration and constants for Notion Analytics
 """
 import os
 from pathlib import Path
+from typing import ClassVar
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -42,7 +43,7 @@ class Config:
     SLACK_WEBHOOK_URL = os.getenv('SLACK_WEBHOOK_URL')
 
     @classmethod
-    def validate(cls):
+    def validate(cls) -> bool:
         """
         Validate configuration before running
         Raises ValueError if configuration is invalid
@@ -87,7 +88,7 @@ class Config:
         return True
 
     @classmethod
-    def print_config(cls):
+    def print_config(cls) -> None:
         """Print current configuration (for debugging)"""
         print("=" * 60)
         print("CONFIGURATION")

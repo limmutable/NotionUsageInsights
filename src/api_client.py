@@ -4,7 +4,7 @@ Notion API client with rate limiting and caching
 import time
 import pickle
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from notion_client import Client
 from tqdm import tqdm
 from config import Config
@@ -18,7 +18,7 @@ class NotionAPIClient:
         self.client = Client(auth=Config.NOTION_TOKEN)
         self.rate_limit_delay = 1.0 / Config.REQUESTS_PER_SECOND
 
-    def _rate_limit(self):
+    def _rate_limit(self) -> None:
         """Sleep to respect rate limits"""
         time.sleep(self.rate_limit_delay)
 
@@ -26,7 +26,7 @@ class NotionAPIClient:
         """Get path for cache file"""
         return Path(Config.CACHE_DIR) / f"{cache_name}.pkl"
 
-    def _load_cache(self, cache_name: str) -> Optional[any]:
+    def _load_cache(self, cache_name: str) -> Optional[Any]:
         """Load data from cache if exists"""
         cache_path = self._get_cache_path(cache_name)
         if cache_path.exists():
@@ -34,13 +34,13 @@ class NotionAPIClient:
                 return pickle.load(f)
         return None
 
-    def _save_cache(self, cache_name: str, data: any):
+    def _save_cache(self, cache_name: str, data: Any) -> None:
         """Save data to cache"""
         cache_path = self._get_cache_path(cache_name)
         with open(cache_path, 'wb') as f:
             pickle.dump(data, f)
 
-    def get_all_users(self, use_cache: bool = True) -> Dict[str, Dict]:
+    def get_all_users(self, use_cache: bool = True) -> Dict[str, Dict[str, Any]]:
         """
         Fetch all workspace users
 
@@ -80,7 +80,7 @@ class NotionAPIClient:
         print(f"✓ Fetched {len(users)} users")
         return users
 
-    def search_all_pages(self, use_cache: bool = True) -> List[Dict]:
+    def search_all_pages(self, use_cache: bool = True) -> List[Dict[str, Any]]:
         """
         Search all pages via API
 
@@ -121,7 +121,7 @@ class NotionAPIClient:
         print(f"✓ Found {len(all_pages)} pages")
         return all_pages
 
-    def get_page_details(self, page_id: str) -> Optional[Dict]:
+    def get_page_details(self, page_id: str) -> Optional[Dict[str, Any]]:
         """
         Retrieve full metadata for a single page
 
@@ -149,7 +149,7 @@ class NotionAPIClient:
             return None
 
     def enrich_pages(self, page_ids: List[str], use_cache: bool = True,
-                     force_refresh: bool = False) -> List[Dict]:
+                     force_refresh: bool = False) -> List[Dict[str, Any]]:
         """
         Fetch detailed metadata for multiple pages
         This is the slowest operation (1 hour per 10K pages)
