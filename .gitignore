@@ -76,3 +76,6 @@ project_status_*.md
 
 # Warp AI agent configuration
 WARP.md
+
+# Commit message drafts
+COMMIT_MSG.txt
