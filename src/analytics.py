@@ -110,8 +110,20 @@ class WorkspaceAnalytics:
         total_pages = len(self.df)
         total_users = len(self.users)
 
-        # Active contributors (users who created at least 1 page)
+        # Active contributors (unique users who created at least 1 page)
+        # This includes both current users AND deleted users whose pages remain
         active_contributors = self.df['created_by'].nunique() if not self.df.empty else 0
+
+        # Get creator IDs from pages
+        page_creator_ids = set(self.df['created_by'].unique()) if not self.df.empty else set()
+        current_user_ids = set(self.users.keys())
+
+        # Calculate current vs deleted creators
+        current_creators = len(page_creator_ids & current_user_ids)
+        deleted_creators = len(page_creator_ids - current_user_ids)
+
+        # Inactive users: current users who have never created a page
+        inactive_users = total_users - current_creators
 
         # Stale percentage (pages not edited in 12+ months)
         stale_pages = len(self.df[self.df['days_since_edit'] >= 365]) if not self.df.empty else 0
@@ -119,13 +131,15 @@ class WorkspaceAnalytics:
 
         # Cost per active user
         annual_cost = total_users * Config.MONTHLY_COST_PER_USER * 12
-        cost_per_active = (annual_cost / active_contributors) if active_contributors > 0 else 0
+        cost_per_active = (annual_cost / current_creators) if current_creators > 0 else 0
 
         return {
             'total_pages': total_pages,
             'total_users': total_users,
             'active_contributors': active_contributors,
-            'inactive_users': total_users - active_contributors,
+            'current_creators': current_creators,
+            'deleted_creators': deleted_creators,
+            'inactive_users': inactive_users,
             'stale_pages': stale_pages,
             'stale_percentage': round(stale_percentage, 1),
             'annual_cost': annual_cost,
