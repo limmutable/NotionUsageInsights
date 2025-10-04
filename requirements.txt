@@ -1,0 +1,28 @@
+# Notion API
+notion-client==2.2.1
+
+# Environment Configuration
+python-dotenv==1.0.1
+
+# Data Processing
+pandas==2.2.0
+numpy==1.26.3
+
+# Excel Generation
+openpyxl==3.1.2
+xlsxwriter==3.1.9
+
+# CLI/Progress Display
+tqdm==4.66.1
+rich==13.7.0
+
+# Utilities
+requests==2.31.0
+
+# Testing
+pytest==8.4.2
+
+# Optional: Visualization (uncomment if needed)
+# matplotlib==3.8.2
+# plotly==5.18.0
+# seaborn==0.13.1
