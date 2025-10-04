@@ -11,7 +11,7 @@ from pathlib import Path
 from config import Config
 from src.api_client import NotionAPIClient
 from src.extractors import ExportExtractor
-# from src.analytics import AnalyticsEngine  # Phase 5
+from src.analytics import WorkspaceAnalytics  # Phase 5
 # from src.report_builder import ReportBuilder  # Phase 6
 
 
@@ -72,18 +72,20 @@ def main() -> int:
         print(f"   ✓ Export size: {export_summary['export_size_mb']} MB")
         print()
 
-        # ========== TODO: PHASE 5 - Analytics ==========
-        # print("📊 Step 5: Running analytics calculations...")
-        # analytics = AnalyticsEngine(users, enriched_pages)
-        #
-        # growth_metrics = analytics.calculate_growth_metrics()
-        # user_engagement = analytics.calculate_user_engagement()
-        # content_health = analytics.calculate_content_health()
-        # collaboration = analytics.calculate_collaboration_metrics()
-        # cost_analysis = analytics.calculate_cost_metrics()
-        # knowledge_risk = analytics.calculate_knowledge_risk()
-        # print("   ✓ Analytics complete")
-        # print()
+        # ========== PHASE 5 - Analytics ==========
+        print("📊 Step 5: Running analytics calculations...")
+        analytics = WorkspaceAnalytics(pages=pages, users=users)
+        results = analytics.run_all()
+
+        print(f"   ✓ Summary: {results['summary']['total_pages']} pages, {results['summary']['active_contributors']} active contributors")
+        print(f"   ✓ Growth: {len(results['growth']['annual_counts'])} years tracked")
+        print(f"   ✓ Users: {results['users']['segments']['power_creators']} power creators")
+        print(f"   ✓ Collaboration: {results['collaboration']['average_collaboration_score']:.1f}% avg score")
+        print(f"   ✓ Health: {results['content_health']['stale_percentage']:.1f}% stale pages")
+        print(f"   ✓ Costs: ${results['costs']['total_annual_cost']:,.0f} annual")
+        print(f"   ✓ Risk: Gini {results['risk']['gini_coefficient']:.3f}, Bus factor {results['risk']['bus_factor']}")
+        print("   ✓ Analytics complete")
+        print()
 
         # ========== TODO: PHASE 6 - Report Generation ==========
         # print("📄 Step 6: Generating Excel report...")
@@ -111,7 +113,7 @@ def main() -> int:
         print()
         print("⚠️  NOTE: Full pipeline not yet implemented")
         print("   ✅ Phase 4: Export Extractor (DONE)")
-        print("   - Phase 5: Analytics Engine (pending)")
+        print("   ✅ Phase 5: Analytics Engine (DONE)")
         print("   - Phase 6: Report Builder (pending)")
         print()
 

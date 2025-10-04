@@ -38,9 +38,17 @@ class WorkspaceAnalytics:
         - Staleness categories
         - Flags (abandoned, single-owner, template)
         """
-        # Convert timestamps to datetime
-        self.df['created_time'] = pd.to_datetime(self.df['created_time'])
-        self.df['last_edited_time'] = pd.to_datetime(self.df['last_edited_time'])
+        # Convert timestamps to datetime (remove timezone for consistency)
+        self.df['created_time'] = pd.to_datetime(self.df['created_time'], utc=True).dt.tz_localize(None)
+        self.df['last_edited_time'] = pd.to_datetime(self.df['last_edited_time'], utc=True).dt.tz_localize(None)
+
+        # Extract user IDs from dict objects (Notion API returns {object: 'user', id: 'uuid'})
+        self.df['created_by'] = self.df['created_by'].apply(
+            lambda x: x.get('id') if isinstance(x, dict) else x
+        )
+        self.df['last_edited_by'] = self.df['last_edited_by'].apply(
+            lambda x: x.get('id') if isinstance(x, dict) else x
+        )
 
         # Add user names
         self.df['creator_name'] = self.df['created_by'].map(
