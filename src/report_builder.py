@@ -128,6 +128,17 @@ class MarkdownReportBuilder:
         """Format currency with $ symbol"""
         return f"${value:,.0f}"
 
+    def _format_bus_factor_users(self, risk: Dict[str, Any]) -> str:
+        """Format bus factor users with page counts and percentages"""
+        bus_factor_details = risk.get('bus_factor_details', [])
+        if not bus_factor_details:
+            return "_None_"
+
+        # Format: Name (pages, percentage%)
+        formatted_users = [f"{name} ({pages:,} pages, {pct}%)"
+                          for name, pages, pct in bus_factor_details]
+        return ", ".join(formatted_users)
+
     def _get_status_icon(self, metric: str, value: float) -> str:
         """
         Get status icon based on metric and value using Config thresholds
@@ -612,11 +623,32 @@ class MarkdownReportBuilder:
             risk_level = "✅ LOW RISK: Knowledge is well distributed"
             knowledge_dist = "well distributed"
 
+        # Format concentration user lists
+        top_1_details = conc['top_1_percent'].get('user_details', [])
+        top_5_names = conc['top_5_percent'].get('user_names', [])
+        top_10_names = conc['top_10_percent'].get('user_names', [])
+
+        # Format top 1% with page counts
+        top_1_text = ", ".join([f"{name} ({pages:,} pages)" for name, pages in top_1_details]) if top_1_details else "_None_"
+
+        # Format top 5% and 10% as comma-separated lists
+        top_5_text = ", ".join(top_5_names) if top_5_names else "_None_"
+        top_10_text = ", ".join(top_10_names) if top_10_names else "_None_"
+
         return f"""## Risk Assessment
 
 ### Ownership Concentration
 
 {conc_table}
+
+**Top 1% (Critical concentration):**
+- {top_1_text}
+
+**Top 5% (High concentration):**
+- {top_5_text}
+
+**Top 10% (Significant concentration):**
+- {top_10_text}
 
 ### Risk Metrics
 
@@ -624,6 +656,9 @@ class MarkdownReportBuilder:
 |:---|---:|:---:|
 | **Gini Coefficient** | {risk['gini_coefficient']:.3f} | {gini_icon} |
 | **Bus Factor** | {risk['bus_factor']} people | {bus_icon} |
+
+**Bus Factor Critical Users:**
+- {self._format_bus_factor_users(risk)}
 
 ### Understanding the Metrics
 

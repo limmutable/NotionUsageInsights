@@ -572,21 +572,44 @@ class WorkspaceAnalytics:
         top_5_pct_pages = pages_per_user.head(top_5_pct_count).sum()
         top_10_pct_pages = pages_per_user.head(top_10_pct_count).sum()
 
+        # Get user names for concentration
+        top_1_pct_user_ids = pages_per_user.head(top_1_pct_count).index.tolist()
+        top_5_pct_user_ids = pages_per_user.head(top_5_pct_count).index.tolist()
+        top_10_pct_user_ids = pages_per_user.head(top_10_pct_count).index.tolist()
+
+        top_1_pct_names = [self.users.get(uid, {}).get('name', 'Unknown') for uid in top_1_pct_user_ids]
+        top_5_pct_names = [self.users.get(uid, {}).get('name', 'Unknown') for uid in top_5_pct_user_ids]
+        top_10_pct_names = [self.users.get(uid, {}).get('name', 'Unknown') for uid in top_10_pct_user_ids]
+
+        # Get page counts per user for concentration list
+        top_1_pct_details = [(self.users.get(uid, {}).get('name', 'Unknown'), int(pages_per_user[uid]))
+                             for uid in top_1_pct_user_ids]
+        top_5_pct_details = [(self.users.get(uid, {}).get('name', 'Unknown'), int(pages_per_user[uid]))
+                             for uid in top_5_pct_user_ids]
+        top_10_pct_details = [(self.users.get(uid, {}).get('name', 'Unknown'), int(pages_per_user[uid]))
+                              for uid in top_10_pct_user_ids]
+
         concentration = {
             'top_1_percent': {
                 'users': top_1_pct_count,
                 'pages': int(top_1_pct_pages),
-                'percentage': round((top_1_pct_pages / total_pages * 100) if total_pages > 0 else 0, 1)
+                'percentage': round((top_1_pct_pages / total_pages * 100) if total_pages > 0 else 0, 1),
+                'user_names': top_1_pct_names,
+                'user_details': top_1_pct_details
             },
             'top_5_percent': {
                 'users': top_5_pct_count,
                 'pages': int(top_5_pct_pages),
-                'percentage': round((top_5_pct_pages / total_pages * 100) if total_pages > 0 else 0, 1)
+                'percentage': round((top_5_pct_pages / total_pages * 100) if total_pages > 0 else 0, 1),
+                'user_names': top_5_pct_names,
+                'user_details': top_5_pct_details
             },
             'top_10_percent': {
                 'users': top_10_pct_count,
                 'pages': int(top_10_pct_pages),
-                'percentage': round((top_10_pct_pages / total_pages * 100) if total_pages > 0 else 0, 1)
+                'percentage': round((top_10_pct_pages / total_pages * 100) if total_pages > 0 else 0, 1),
+                'user_names': top_10_pct_names,
+                'user_details': top_10_pct_details
             }
         }
 
@@ -608,11 +631,20 @@ class WorkspaceAnalytics:
         # Calculate cumulative percentage of pages
         cumulative_pct = 0
         bus_factor = 0
-        for pages in pages_per_user.values:
-            cumulative_pct += (pages / total_pages * 100) if total_pages > 0 else 0
+        bus_factor_user_ids = []
+        bus_factor_details = []
+
+        for user_id, pages in pages_per_user.items():
+            page_pct = (pages / total_pages * 100) if total_pages > 0 else 0
+            cumulative_pct += page_pct
             bus_factor += 1
+            bus_factor_user_ids.append(user_id)
+            user_name = self.users.get(user_id, {}).get('name', 'Unknown')
+            bus_factor_details.append((user_name, int(pages), round(page_pct, 1)))
             if cumulative_pct >= 50:
                 break
+
+        bus_factor_names = [self.users.get(uid, {}).get('name', 'Unknown') for uid in bus_factor_user_ids]
 
         # Single-owner pages by top 10 creators
         top_10_creator_ids = pages_per_user.head(10).index.tolist()
@@ -626,6 +658,8 @@ class WorkspaceAnalytics:
             'concentration': concentration,
             'gini_coefficient': round(gini, 3),
             'bus_factor': bus_factor,
+            'bus_factor_users': bus_factor_names,
+            'bus_factor_details': bus_factor_details,
             'single_owner_pages_top_10': single_owner_top_10_count
         }
 
