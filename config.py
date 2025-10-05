@@ -40,6 +40,35 @@ class Config:
     MONTHLY_COST_PER_USER = int(os.getenv('MONTHLY_COST_PER_USER', 12))  # Business plan
     BLENDED_HOURLY_RATE = int(os.getenv('BLENDED_HOURLY_RATE', 48))      # For ROI calculations
 
+    # ==================== Status Icon Thresholds ====================
+    # Thresholds for report status icons (✅ good, ⚠️ warning, ❌ critical)
+    # Format: [(threshold1, icon1), (threshold2, icon2), ...]
+
+    # Stale percentage thresholds (lower is better)
+    STALE_GOOD_THRESHOLD = 30      # < 30% stale = ✅ good
+    STALE_WARNING_THRESHOLD = 60   # 30-60% stale = ⚠️ warning
+    # > 60% stale = ❌ critical
+
+    # Bus factor thresholds (higher is better)
+    BUS_FACTOR_CRITICAL = 5        # < 5 people = ❌ critical
+    BUS_FACTOR_WARNING = 10        # 5-10 people = ⚠️ warning
+    # > 10 people = ✅ good
+
+    # Gini coefficient thresholds (lower is better - measures inequality)
+    GINI_GOOD_THRESHOLD = 0.5      # < 0.5 = ✅ good (low concentration)
+    GINI_WARNING_THRESHOLD = 0.7   # 0.5-0.7 = ⚠️ warning
+    # > 0.7 = ❌ critical (high concentration)
+
+    # Wasted spend thresholds (lower is better)
+    WASTE_GOOD_THRESHOLD = 10      # < 10% wasted = ✅ good
+    WASTE_WARNING_THRESHOLD = 30   # 10-30% wasted = ⚠️ warning
+    # > 30% wasted = ❌ critical
+
+    # Collaboration score thresholds (higher is better)
+    COLLAB_CRITICAL = 50           # < 50 score = ❌ critical
+    COLLAB_WARNING = 100           # 50-100 score = ⚠️ warning
+    # > 100 score = ✅ good
+
     # ==================== Optional Configuration ====================
     SLACK_WEBHOOK_URL = os.getenv('SLACK_WEBHOOK_URL')
 
@@ -95,23 +124,37 @@ class Config:
         elif not (cls.NOTION_TOKEN.startswith('secret_') or cls.NOTION_TOKEN.startswith('ntn_')):
             errors.append("❌ NOTION_TOKEN appears invalid (should start with 'secret_' or 'ntn_')")
 
-        # Check export directory exists
+        # Check export directory exists and is readable
         export_path = Path(cls.EXPORT_DIR)
         if not export_path.exists():
             errors.append(f"❌ Export directory not found: {cls.EXPORT_DIR}")
+        elif not export_path.is_dir():
+            errors.append(f"❌ Export path is not a directory: {cls.EXPORT_DIR}")
+        elif not os.access(export_path, os.R_OK):
+            errors.append(f"❌ Export directory is not readable: {cls.EXPORT_DIR}")
         elif not any(export_path.rglob('*.md')):
             errors.append(f"❌ No .md files found in export directory: {cls.EXPORT_DIR}")
 
-        # Create output directories if they don't exist
+        # Create output directories if they don't exist, and check write permissions
         try:
-            Path(cls.OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
-            Path(cls.CACHE_DIR).mkdir(parents=True, exist_ok=True)
+            output_path = Path(cls.OUTPUT_DIR)
+            cache_path = Path(cls.CACHE_DIR)
+
+            output_path.mkdir(parents=True, exist_ok=True)
+            cache_path.mkdir(parents=True, exist_ok=True)
+
+            # Check write permissions
+            if not os.access(output_path, os.W_OK):
+                errors.append(f"❌ Output directory is not writable: {cls.OUTPUT_DIR}")
+            if not os.access(cache_path, os.W_OK):
+                errors.append(f"❌ Cache directory is not writable: {cls.CACHE_DIR}")
+
         except Exception as e:
             errors.append(f"❌ Could not create output directories: {e}")
 
         # Validate numeric parameters
-        if cls.REQUESTS_PER_SECOND <= 0:
-            errors.append("❌ REQUESTS_PER_SECOND must be > 0")
+        if cls.REQUESTS_PER_SECOND <= 0 or cls.REQUESTS_PER_SECOND > 10:
+            errors.append("❌ REQUESTS_PER_SECOND must be between 1 and 10")
 
         if cls.POWER_USER_THRESHOLD <= cls.ACTIVE_USER_THRESHOLD:
             errors.append("❌ POWER_USER_THRESHOLD must be > ACTIVE_USER_THRESHOLD")

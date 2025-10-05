@@ -130,7 +130,7 @@ class MarkdownReportBuilder:
 
     def _get_status_icon(self, metric: str, value: float) -> str:
         """
-        Get status icon based on metric and value
+        Get status icon based on metric and value using Config thresholds
 
         Args:
             metric: Name of metric (e.g., 'stale_percentage', 'bus_factor')
@@ -139,12 +139,35 @@ class MarkdownReportBuilder:
         Returns:
             Status icon: ✅ (good), ⚠️ (warning), ❌ (critical)
         """
+        from config import Config
+
+        # Build thresholds from Config (allows user customization)
         thresholds = {
-            'stale_percentage': [(30, '✅'), (60, '⚠️'), (100, '❌')],
-            'bus_factor': [(5, '❌'), (10, '⚠️'), (float('inf'), '✅')],
-            'gini_coefficient': [(0.5, '✅'), (0.7, '⚠️'), (1.0, '❌')],
-            'wasted_percentage': [(10, '✅'), (30, '⚠️'), (100, '❌')],
-            'collaboration_score': [(50, '❌'), (100, '⚠️'), (float('inf'), '✅')]
+            'stale_percentage': [
+                (Config.STALE_GOOD_THRESHOLD, '✅'),
+                (Config.STALE_WARNING_THRESHOLD, '⚠️'),
+                (100, '❌')
+            ],
+            'bus_factor': [
+                (Config.BUS_FACTOR_CRITICAL, '❌'),
+                (Config.BUS_FACTOR_WARNING, '⚠️'),
+                (float('inf'), '✅')
+            ],
+            'gini_coefficient': [
+                (Config.GINI_GOOD_THRESHOLD, '✅'),
+                (Config.GINI_WARNING_THRESHOLD, '⚠️'),
+                (1.0, '❌')
+            ],
+            'wasted_percentage': [
+                (Config.WASTE_GOOD_THRESHOLD, '✅'),
+                (Config.WASTE_WARNING_THRESHOLD, '⚠️'),
+                (100, '❌')
+            ],
+            'collaboration_score': [
+                (Config.COLLAB_CRITICAL, '❌'),
+                (Config.COLLAB_WARNING, '⚠️'),
+                (float('inf'), '✅')
+            ]
         }
 
         if metric not in thresholds:
