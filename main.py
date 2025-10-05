@@ -4,6 +4,7 @@ Notion Usage Insights - Main Orchestrator
 Generates comprehensive workspace analytics and usage reports
 """
 import sys
+import traceback
 from typing import Optional
 from pathlib import Path
 
@@ -11,8 +12,8 @@ from pathlib import Path
 from config import Config
 from src.api_client import NotionAPIClient
 from src.extractors import ExportExtractor
-from src.analytics import WorkspaceAnalytics  # Phase 5
-# from src.report_builder import ReportBuilder  # Phase 6
+from src.analytics import WorkspaceAnalytics
+from src.report_builder import MarkdownReportBuilder
 
 
 def main() -> int:
@@ -89,7 +90,6 @@ def main() -> int:
 
         # ========== PHASE 6 - Report Generation ==========
         print("📄 Step 6: Generating Markdown report...")
-        from src.report_builder import MarkdownReportBuilder
         report_builder = MarkdownReportBuilder(results)
         output_path = report_builder.generate_report()
         print(f"   ✓ Report saved: {output_path}")
@@ -121,7 +121,6 @@ def main() -> int:
     except Exception as e:
         print(f"\n❌ Unexpected Error:")
         print(f"   {type(e).__name__}: {str(e)}")
-        import traceback
         traceback.print_exc()
         return 1
 

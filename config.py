@@ -2,6 +2,7 @@
 Configuration and constants for Notion Analytics
 """
 import os
+import logging
 from pathlib import Path
 from typing import ClassVar
 from dotenv import load_dotenv
@@ -41,6 +42,44 @@ class Config:
 
     # ==================== Optional Configuration ====================
     SLACK_WEBHOOK_URL = os.getenv('SLACK_WEBHOOK_URL')
+
+    # ==================== Logging Configuration ====================
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')  # DEBUG, INFO, WARNING, ERROR
+    LOG_TO_FILE = os.getenv('LOG_TO_FILE', 'false').lower() == 'true'
+    LOG_FILE = os.getenv('LOG_FILE', './data/notion_analytics.log')
+
+    @classmethod
+    def setup_logging(cls) -> None:
+        """Configure logging for the application"""
+        # Create formatter
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+
+        # Get root logger
+        logger = logging.getLogger()
+        logger.setLevel(getattr(logging, cls.LOG_LEVEL.upper()))
+
+        # Clear existing handlers
+        logger.handlers = []
+
+        # Console handler (always enabled for user feedback)
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)  # Only INFO and above to console
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
+
+        # File handler (optional)
+        if cls.LOG_TO_FILE:
+            try:
+                Path(cls.LOG_FILE).parent.mkdir(parents=True, exist_ok=True)
+                file_handler = logging.FileHandler(cls.LOG_FILE)
+                file_handler.setLevel(logging.DEBUG)  # All levels to file
+                file_handler.setFormatter(formatter)
+                logger.addHandler(file_handler)
+            except Exception as e:
+                print(f"Warning: Could not create log file: {e}")
 
     @classmethod
     def validate(cls) -> bool:

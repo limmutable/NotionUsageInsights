@@ -6,6 +6,7 @@ import pickle
 from pathlib import Path
 from typing import List, Dict, Optional, Any
 from notion_client import Client
+from notion_client.errors import APIResponseError, HTTPResponseError
 from tqdm import tqdm
 from config import Config
 
@@ -61,24 +62,40 @@ class NotionAPIClient:
         has_more = True
         start_cursor = None
 
-        while has_more:
-            response = self.client.users.list(start_cursor=start_cursor)
+        try:
+            while has_more:
+                response = self.client.users.list(start_cursor=start_cursor)
 
-            for user in response['results']:
-                users[user['id']] = {
-                    'id': user['id'],
-                    'name': user.get('name', 'Unknown'),
-                    'email': user.get('person', {}).get('email', 'N/A'),
-                    'type': user['type']  # 'person' or 'bot'
-                }
+                for user in response['results']:
+                    users[user['id']] = {
+                        'id': user['id'],
+                        'name': user.get('name', 'Unknown'),
+                        'email': user.get('person', {}).get('email', 'N/A'),
+                        'type': user['type']  # 'person' or 'bot'
+                    }
 
-            has_more = response.get('has_more', False)
-            start_cursor = response.get('next_cursor')
-            self._rate_limit()
+                has_more = response.get('has_more', False)
+                start_cursor = response.get('next_cursor')
+                self._rate_limit()
 
-        self._save_cache('users', users)
-        print(f"✓ Fetched {len(users)} users")
-        return users
+            self._save_cache('users', users)
+            print(f"✓ Fetched {len(users)} users")
+            return users
+
+        except APIResponseError as e:
+            # Handle specific Notion API errors
+            if e.code == 'unauthorized':
+                raise ValueError("Authentication failed: Invalid or expired Notion token. Please check your .env file.")
+            elif e.code == 'rate_limited':
+                raise ValueError("Rate limit exceeded. Please wait a few minutes and try again.")
+            else:
+                raise ValueError(f"Notion API error while fetching users: {e.code} - {str(e)}")
+        except HTTPResponseError as e:
+            # Handle HTTP errors
+            raise ValueError(f"HTTP error while fetching users: Status {e.status} - {str(e)}")
+        except Exception as e:
+            # Catch-all for unexpected errors
+            raise ValueError(f"Unexpected error while fetching users: {type(e).__name__}: {str(e)}")
 
     def search_all_pages(self, use_cache: bool = True) -> List[Dict[str, Any]]:
         """
@@ -101,25 +118,41 @@ class NotionAPIClient:
         has_more = True
         start_cursor = None
 
-        with tqdm(desc="Searching pages", unit=" pages") as pbar:
-            while has_more:
-                response = self.client.search(
-                    filter={"property": "object", "value": "page"},
-                    start_cursor=start_cursor,
-                    page_size=100
-                )
+        try:
+            with tqdm(desc="Searching pages", unit=" pages") as pbar:
+                while has_more:
+                    response = self.client.search(
+                        filter={"property": "object", "value": "page"},
+                        start_cursor=start_cursor,
+                        page_size=100
+                    )
 
-                batch = response['results']
-                all_pages.extend(batch)
-                pbar.update(len(batch))
+                    batch = response['results']
+                    all_pages.extend(batch)
+                    pbar.update(len(batch))
 
-                has_more = response.get('has_more', False)
-                start_cursor = response.get('next_cursor')
-                self._rate_limit()
+                    has_more = response.get('has_more', False)
+                    start_cursor = response.get('next_cursor')
+                    self._rate_limit()
 
-        self._save_cache('search_results', all_pages)
-        print(f"✓ Found {len(all_pages)} pages")
-        return all_pages
+            self._save_cache('search_results', all_pages)
+            print(f"✓ Found {len(all_pages)} pages")
+            return all_pages
+
+        except APIResponseError as e:
+            # Handle specific Notion API errors
+            if e.code == 'unauthorized':
+                raise ValueError("Authentication failed: Invalid or expired Notion token. Please check your .env file.")
+            elif e.code == 'rate_limited':
+                raise ValueError("Rate limit exceeded. Please wait a few minutes and try again.")
+            else:
+                raise ValueError(f"Notion API error: {e.code} - {str(e)}")
+        except HTTPResponseError as e:
+            # Handle HTTP errors
+            raise ValueError(f"HTTP error while searching pages: Status {e.status} - {str(e)}")
+        except Exception as e:
+            # Catch-all for unexpected errors
+            raise ValueError(f"Unexpected error while searching pages: {type(e).__name__}: {str(e)}")
 
     def get_page_details(self, page_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -144,8 +177,24 @@ class NotionAPIClient:
                 'url': page['url'],
                 'archived': page.get('archived', False)
             }
+        except APIResponseError as e:
+            # Handle specific Notion API errors
+            if e.code == 'unauthorized':
+                print(f"✗ Authentication error: Invalid or expired token")
+            elif e.code == 'object_not_found':
+                print(f"✗ Page not found: {page_id}")
+            elif e.code == 'rate_limited':
+                print(f"✗ Rate limited - please retry later")
+            else:
+                print(f"✗ API error for page {page_id}: {e.code} - {str(e)[:100]}")
+            return None
+        except HTTPResponseError as e:
+            # Handle HTTP errors (network issues, server errors)
+            print(f"✗ HTTP error for page {page_id}: Status {e.status} - {str(e)[:100]}")
+            return None
         except Exception as e:
-            print(f"✗ Error fetching page {page_id}: {str(e)[:100]}")
+            # Catch-all for unexpected errors
+            print(f"✗ Unexpected error fetching page {page_id}: {type(e).__name__}: {str(e)[:100]}")
             return None
 
     def enrich_pages(self, page_ids: List[str], use_cache: bool = True,
